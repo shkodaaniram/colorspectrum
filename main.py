@@ -2,6 +2,8 @@ import wx
 import matplotlib.pyplot as plt
 import numpy as np
 
+import data_loading as dl
+
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
         #wx.Frame.__init__(self, parent, id, title, wx.DefaultPosition, wx.Size(900, 657))
@@ -27,7 +29,7 @@ class MainFrame(wx.Frame):
         self.rb_xyz = wx.CheckBox(panel, label = 'XYZ graphs',pos = (100,100))
         vbox_left.Add(self.rb_xyz, flag=wx.RIGHT | wx.BOTTOM | wx.TOP, border=10)
 
-        lblList = ['Blue', 'Green', 'Red']
+        lblList = ['Blue (CC-2)', 'Green (GZC-9)', 'Red (0C-14)']
         self.rbox = wx.RadioBox(panel, label = 'Glass color', pos = (80,10), choices = lblList, majorDimension = 1, style = wx.RA_SPECIFY_ROWS)
         vbox_left.Add(self.rbox, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
@@ -65,8 +67,15 @@ class MainFrame(wx.Frame):
         name = event.GetEventObject().GetName()
         if name == 'show_graphs':
             if self.rb_xyz.GetValue() == True:
-                print ''
-                #show xyz graph
+                wave_length, x, y, z = dl.load_xyz_csv()
+                plt.plot(wave_length, z, wave_length, y, wave_length, x)
+                plt.xlabel('Wavelength(nm)')
+                plt.axis([350, 850, 0, 2.1])
+                plt.grid(True)
+                plt.title('The CIE standard observer color matching functions')
+                plt.show()
+            if self.rbox.GetSelection() == 0: #CC-2 choice
+                dl.load_txt('CC-2.txt')
             print 'DRAW GRAPHS'
         print "Label of pressed button = ",label, " My btn name: ", name
 
