@@ -1,13 +1,17 @@
 import wx
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import interp1d
 
 import data_loading as dl
+import data_processing as dp
 
 class MainFrame(wx.Frame):
+
     def __init__(self, parent, title):
         #wx.Frame.__init__(self, parent, id, title, wx.DefaultPosition, wx.Size(900, 657))
-        super(MainFrame, self).__init__(parent, title = title, size=(1000,500))
+        super(MainFrame, self).__init__(parent, title = title, size=(400,500))
+        self.FILENAME = 'CC-2.txt'
         self.initUI()
         self.Centre()
         self.Show(True)
@@ -36,6 +40,12 @@ class MainFrame(wx.Frame):
         self.show_graph_btn = wx.Button(panel, -1, label='Show graphs', pos = (80,10), name='show_graphs')
         vbox_left.Add(self.show_graph_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
+        self.to_rgb_btn = wx.Button(panel, -1, label='To RGB', pos = (80,10), name='to_rgb')
+        vbox_left.Add(self.to_rgb_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
+
+        self.color = wx.TextCtrl(panel, pos =(300, 0), size=(100,50))
+        vbox_left.Add(self.color, flag=wx.RIGHT | wx.BOTTOM, border=15)
+
         #RIGHT PANEL
 
         '''self.figure = Figure(figsize=(5,5))
@@ -56,7 +66,13 @@ class MainFrame(wx.Frame):
         panel.SetSizer(hbox)
 
     def onRadioBox(self,e):
-        print self.rbox.GetStringSelection(),' is clicked from Radio Box'
+        if self.rbox.GetSelection() == 0: #CC-2 choice
+            self.FILENAME = 'CC-2.txt'
+        elif self.rbox.GetSelection() == 1:
+            self.FILENAME = 'GZC-9.txt'
+        elif self.rbox.GetSelection() == 2:
+            self.FILENAME = 'OC-14.txt'
+
 
     def onChecked(self, e):
         cb = e.GetEventObject()
@@ -74,10 +90,15 @@ class MainFrame(wx.Frame):
                 plt.grid(True)
                 plt.title('The CIE standard observer color matching functions')
                 plt.show()
-            if self.rbox.GetSelection() == 0: #CC-2 choice
-                dl.load_txt('CC-2.txt')
-            print 'DRAW GRAPHS'
-        print "Label of pressed button = ",label, " My btn name: ", name
+            data = dl.load_txt(self.FILENAME)
+            func = interp1d(data[:,0], data[:,1], kind='cubic')
+            dp.plot_data(data, [], 'Wavelength(nm)', '', '', func)
+        elif name == 'to_rgb':
+            data = dl.load_txt(self.FILENAME)
+            func = interp1d(data[:,0], data[:,1], kind='cubic') #interpolation of the data
+            R, G, B = dp.plot_to_xyz(func)
+            self.color.SetBackgroundColour(wx.Colour(R, G, B))
+            self.Refresh()
 
 
 if __name__ == '__main__':
