@@ -18,8 +18,6 @@ class MainFrame(wx.Frame):
 
     def initUI(self):
         panel = wx.Panel(self)
-        font = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
-        font.SetPointSize(9)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         fgs = wx.FlexGridSizer(rows=1, cols=2, vgap=5, hgap=5)
@@ -27,7 +25,6 @@ class MainFrame(wx.Frame):
         vbox_right = wx.BoxSizer(wx.VERTICAL)
 
         st1 = wx.StaticText(panel, label='Choose data:')
-        st1.SetFont(font)
         vbox_left.Add(st1, flag=wx.RIGHT, border=8)
 
         self.rb_xyz = wx.CheckBox(panel, label = 'XYZ graphs',pos = (100,100))
@@ -43,7 +40,7 @@ class MainFrame(wx.Frame):
         self.to_rgb_btn = wx.Button(panel, -1, label='To RGB', pos = (80,10), name='to_rgb')
         vbox_left.Add(self.to_rgb_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
-        self.color = wx.TextCtrl(panel, pos =(300, 0), size=(100,50))
+        self.color = wx.TextCtrl(panel, pos =(300, 0), size=(350,200))
         vbox_left.Add(self.color, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
         #RIGHT PANEL
@@ -76,7 +73,7 @@ class MainFrame(wx.Frame):
 
     def onChecked(self, e):
         cb = e.GetEventObject()
-        print cb.GetLabel(),' is clicked',cb.GetValue()
+        print(cb.GetLabel(),' is clicked',cb.GetValue())
 
     def OnClicked(self, event):
         label = event.GetEventObject().GetLabel()
@@ -91,13 +88,14 @@ class MainFrame(wx.Frame):
                 plt.title('The CIE standard observer color matching functions')
                 plt.show()
             data = dl.load_txt(self.FILENAME)
-            func = interp1d(data[:,0], data[:,1], kind='cubic')
+            func = interp1d(data[:,0], data[:,1], kind='slinear')
             dp.plot_data(data, [], 'Wavelength(nm)', '', '', func)
         elif name == 'to_rgb':
             data = dl.load_txt(self.FILENAME)
-            func = interp1d(data[:,0], data[:,1], kind='cubic') #interpolation of the data
+            func = interp1d(data[:,0], data[:,1], kind='slinear') #interpolation of the data
             R, G, B = dp.plot_to_xyz(func)
-            self.color.SetBackgroundColour(wx.Colour(R, G, B))
+            print ("LAB: ", dp.rgb_to_lab(R,G,B))
+            self.color.SetBackgroundColour(wx.Colour(R * 255.0, G * 255.0, B * 255.0))
             self.Refresh()
 
 

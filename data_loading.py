@@ -15,5 +15,9 @@ def load_xyz_csv():
 
 def load_txt(filename):
     path = "data/"+filename
-    return np.loadtxt(path, delimiter=" ")
+    data = np.loadtxt(path, delimiter=" ")
+    for i, value in np.ndenumerate(data[:, 1]):
+        if value < 0 or value > 1:
+            data[i,1] = int(value)
+    return data
 
