@@ -5,12 +5,13 @@ from scipy.interpolate import interp1d
 
 import data_loading as dl
 import data_processing as dp
+import optimization as optim
 
 class MainFrame(wx.Frame):
 
     def __init__(self, parent, title):
         #wx.Frame.__init__(self, parent, id, title, wx.DefaultPosition, wx.Size(900, 657))
-        super(MainFrame, self).__init__(parent, title = title, size=(400,500))
+        super(MainFrame, self).__init__(parent, title = title, size=(400,600))
         self.FILENAME = 'CC-2.txt'
         self.initUI()
         self.Centre()
@@ -40,8 +41,14 @@ class MainFrame(wx.Frame):
         self.to_rgb_btn = wx.Button(panel, -1, label='To RGB', pos = (80,10), name='to_rgb')
         vbox_left.Add(self.to_rgb_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
+        self.show_cube_btn = wx.Button(panel, -1, label='Show cube', pos=(80, 10), name='show_cube')
+        vbox_left.Add(self.show_cube_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
+
+        self.optimize_btn = wx.Button(panel, -1, label='Optimize color', pos=(80, 10), name='optimize')
+        vbox_left.Add(self.optimize_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
+
         self.color = wx.TextCtrl(panel, pos =(300, 0), size=(350,200))
-        vbox_left.Add(self.color, flag=wx.RIGHT | wx.BOTTOM, border=15)
+        vbox_left.Add(self.color, flag=wx.LEFT | wx.BOTTOM, border=15)
 
         #RIGHT PANEL
 
@@ -96,6 +103,17 @@ class MainFrame(wx.Frame):
             R, G, B = dp.plot_to_xyz(func)
             print ("LAB: ", dp.rgb_to_lab(R,G,B))
             self.color.SetBackgroundColour(wx.Colour(R * 255.0, G * 255.0, B * 255.0))
+            self.Refresh()
+        elif name == 'show_cube':
+            #dp.get_rgb_cube_surface()
+            dp.get_rgb_points()
+        elif name == 'optimize':
+            data = dl.load_txt(self.FILENAME)
+            func = interp1d(data[:, 0], data[:, 1], kind='slinear')  # interpolation of the data
+            R, G, B = dp.plot_to_xyz(func)
+            print("LAB: ", dp.rgb_to_lab(R, G, B))
+            R_optim, G_optim, B_optim = optim.steepest_descend((R, G, B), 'cie1976')
+            self.color.SetBackgroundColour(wx.Colour(R_optim * 255.0, G_optim * 255.0, B_optim * 255.0))
             self.Refresh()
 
 
