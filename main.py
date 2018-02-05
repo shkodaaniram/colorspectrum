@@ -6,6 +6,7 @@ from scipy.interpolate import interp1d
 import data_loading as dl
 import data_processing as dp
 import optimization as optim
+import time
 
 class MainFrame(wx.Frame):
 
@@ -18,8 +19,9 @@ class MainFrame(wx.Frame):
         self.Show(True)
 
     def initUI(self):
-        panel = wx.Panel(self)
 
+        self.createMenu()
+        panel = wx.Panel(self)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         fgs = wx.FlexGridSizer(rows=1, cols=2, vgap=5, hgap=5)
         vbox_left = wx.BoxSizer(wx.VERTICAL)
@@ -47,8 +49,14 @@ class MainFrame(wx.Frame):
         self.optimize_btn = wx.Button(panel, -1, label='Optimize color', pos=(80, 10), name='optimize')
         vbox_left.Add(self.optimize_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
-        self.color = wx.TextCtrl(panel, pos =(300, 0), size=(350,200))
-        vbox_left.Add(self.color, flag=wx.LEFT | wx.BOTTOM, border=15)
+        self.color = wx.TextCtrl(panel, pos =(300, 0), size=(350, 100))
+        vbox_left.Add(self.color, flag=wx.RIGHT | wx.BOTTOM, border=15)
+
+        self.color_optimized = wx.TextCtrl(panel, pos=(300, 0), size=(350, 100))
+        vbox_left.Add(self.color_optimized, flag=wx.RIGHT | wx.BOTTOM, border=15)
+
+        LOAD_FILE_ID = wx.NewId()
+        self.Bind(wx.EVT_MENU, self.loadFile, id=LOAD_FILE_ID)
 
         #RIGHT PANEL
 
@@ -62,6 +70,8 @@ class MainFrame(wx.Frame):
         hbox.Add(fgs, proportion=1, flag=wx.ALL|wx.EXPAND, border=15)
         #hbox.Add(vbox_left, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border=10)
         #hbox.Add(vbox_right, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border=10)
+
+
 
         self.Bind(wx.EVT_CHECKBOX, self.onChecked)
         self.Bind(wx.EVT_BUTTON, self.OnClicked)
@@ -109,12 +119,42 @@ class MainFrame(wx.Frame):
             dp.get_rgb_points()
         elif name == 'optimize':
             data = dl.load_txt(self.FILENAME)
+            print("FILENAME: ", self.FILENAME)
             func = interp1d(data[:, 0], data[:, 1], kind='slinear')  # interpolation of the data
             R, G, B = dp.plot_to_xyz(func)
-            print("LAB: ", dp.rgb_to_lab(R, G, B))
-            R_optim, G_optim, B_optim = optim.steepest_descend((R, G, B), 'cie1976')
-            self.color.SetBackgroundColour(wx.Colour(R_optim * 255.0, G_optim * 255.0, B_optim * 255.0))
+            self.color.SetBackgroundColour(wx.Colour(R * 255.0, G * 255.0, B * 255.0))
             self.Refresh()
+            print("LAB: ", dp.rgb_to_lab(R, G, B))
+            R_optim, G_optim, B_optim = optim.steepest_descend((R, G, B), 'cie1976 ', self)
+            print((int(R_optim * 255), int(G_optim * 255), int(B_optim * 255)))
+            self.color_optimized.SetBackgroundColour((int(R_optim * 255), int(G_optim * 255), int(B_optim * 255)))
+            self.Refresh()
+            print ("RGB: ", (R, G, B), "RGB_optimized: ", (R_optim, G_optim, B_optim))
+
+    def createMenu(self):
+        menubar = wx.MenuBar()
+        file = wx.Menu()
+        help = wx.Menu()
+        file.Append(101, '&Open\tCtrl+O', 'Open a new document')
+        file.AppendSeparator()
+        quit = wx.MenuItem(file, 105, '&Quit\tCtrl+Q', 'Quit the Application')
+        file.Append(quit)
+        menubar.Append(file, '&File')
+        menubar.Append(help, '&Help')
+        self.SetMenuBar(menubar)
+        self.CreateStatusBar()
+        self.Centre()
+        self.Bind(wx.EVT_MENU, self.onQuit, id=105)
+        self.Bind(wx.EVT_MENU, self.loadFile, id=101)
+
+    def loadFile(self, event):
+        dlg = wx.FileDialog(self, "Open", "", "", "*.txt", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.FILENAME = dlg.GetPath()
+        dlg.Destroy()
+
+    def onQuit(self, event):
+        self.Close()
 
 
 if __name__ == '__main__':

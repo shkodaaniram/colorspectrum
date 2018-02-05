@@ -3,6 +3,9 @@ from colormath.color_objects import LabColor
 from colormath import color_diff
 import data_processing as dp
 
+import wx
+import time
+
 def distance(spectrum_pnt, pnt, mode):
     color1 = LabColor(lab_l=spectrum_pnt[0], lab_a=spectrum_pnt[1], lab_b=spectrum_pnt[2])
     color2 = LabColor(lab_l=pnt[0], lab_a=pnt[1], lab_b=pnt[2])
@@ -28,9 +31,9 @@ def count_next_point(spectrum_pnt, pnt, step, mode):
 
 def get_step(spectrum_pnt, pnt, mode):
     #golden section method
-    eps = 0.00001
+    eps = 0.001
     a = 0.0
-    b = 10.0
+    b = 100.0
     phi = 1.618034
     x1 = b - (b - a) / phi
     x2 = a + (b - a) / phi
@@ -48,33 +51,34 @@ def get_step(spectrum_pnt, pnt, mode):
     return (a + b) / 2.0
 
 def fit_into_restrictions(pnt, space_type):
+    point = list(pnt)
     if space_type == 'rgb':
-       if pnt[0] < 0.0 : pnt[0] = 0.0
-       if pnt[0] > 1.0: pnt[0] = 1.0
-       if pnt[1] < 0.0 : pnt[1] = 0.0
-       if pnt[1] > 1.0: pnt[1] = 1.0
-       if pnt[2] < 0.0 : pnt[2] = 0.0
-       if pnt[2] > 1.0: pnt[2] = 1.0
+       if point[0] < 0.0 : point[0] = 0.0
+       if point[0] > 1.0: point[0] = 1.0
+       if point[1] < 0.0 : point[1] = 0.0
+       if point[1] > 1.0: point[1] = 1.0
+       if point[2] < 0.0 : point[2] = 0.0
+       if point[2] > 1.0: point[2] = 1.0
     elif space_type == 'lab':
-        if pnt[0] < 0.0: pnt[0] = 0.0
-        if pnt[0] > 100.0: pnt[0] = 100.0
-        if pnt[1] < -127.0: pnt[1] = -127.0
-        if pnt[1] > 127.0: pnt[1] = 127.0
-        if pnt[2] < -127.0: pnt[2] = -127.0
-        if pnt[2] > 127.0: pnt[2] = 127.0
-    pnt = (pnt[0], pnt[1], pnt[2])
+        if point[0] < 0.0: point[0] = 0.0
+        if point[0] > 96.0: point[0] = 97.0
+        if point[1] < -77.0: point[1] = -77.0
+        if point[1] > 90.0: point[1] = 90.0
+        if point[2] < -110.0: point[2] = -110.0
+        if point[2] > 90.0: point[2] = 90.0
+    pnt = (point[0], point[1], point[2])
     return pnt
 
 #gets rgb point in range from 0 to 1, but returns rgb in range from 0 to 255
-def steepest_descend(spectrum_pnt, mode):
+def steepest_descend(spectrum_pnt, mode, self):
     print('Color for optimization in rgb: ', spectrum_pnt)
     spectrum_pnt = dp.rgb2lab(spectrum_pnt[0], spectrum_pnt[1], spectrum_pnt[2])
     print('Color for optimization in lab: ', spectrum_pnt)
-    step = 0.1  #need optimization
-    start_pnt = (0.0, 0.0, 0.0)
+    step = 1.0 #need optimization
+    start_pnt = (10.0, 10.0, 10.0)
     pnt = start_pnt - np.multiply(step, np.asarray(derivation(spectrum_pnt, start_pnt, mode)))
     print('First counted pnt: ', pnt)
-    eps = 0.00001
+    eps = 0.01
     cnt = 0
     print('first distance: ', np.abs(distance(spectrum_pnt, pnt, mode) - distance(spectrum_pnt, start_pnt, mode)))
     while np.abs(distance(spectrum_pnt, pnt, mode) - distance(spectrum_pnt, start_pnt, mode)) > eps:
@@ -82,9 +86,15 @@ def steepest_descend(spectrum_pnt, mode):
         step = get_step(spectrum_pnt, pnt, mode)
         pnt = start_pnt - np.multiply(step, np.asarray(derivation(spectrum_pnt, start_pnt, mode)))
         pnt = fit_into_restrictions(pnt, 'lab')
+        cnt += 1
+        pnt2 = dp.lab2rgb(pnt[0], pnt[1], pnt[2])
+        pnt2 = fit_into_restrictions(pnt2, 'rgb')
+        pnt = dp.rgb2lab(pnt2[0], pnt2[1], pnt2[2])
         print('Points in the loop: ', start_pnt, pnt)
         print('loop counter: ', cnt, '    STEP: ', step)
         print('distance', np.abs(distance(spectrum_pnt, pnt, mode) - distance(spectrum_pnt, start_pnt, mode)))
-        cnt += 1
+        print('step: ', step, "  RGB: ", pnt2[0] * 255, pnt2[1] * 255, pnt2[2] * 255)
+        print('--------------------------')
+        #time.sleep(1)
     print('Result: ', dp.lab2rgb(pnt[0], pnt[1], pnt[2]))
     return dp.lab2rgb(pnt[0], pnt[1], pnt[2])

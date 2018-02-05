@@ -14,7 +14,10 @@ def load_xyz_csv():
     return wave_length, x, y, z
 
 def load_txt(filename):
-    path = "data/"+filename
+    if len(filename) < 25:
+        path = "data/"+filename
+    else:
+        path = filename
     data = np.loadtxt(path, delimiter=" ")
     for i, value in np.ndenumerate(data[:, 1]):
         if value < 0 or value > 1:
