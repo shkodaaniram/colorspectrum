@@ -90,11 +90,10 @@ def steepest_descend(spectrum_pnt, mode, self):
         pnt2 = dp.lab2rgb(pnt[0], pnt[1], pnt[2])
         pnt2 = fit_into_restrictions(pnt2, 'rgb')
         pnt = dp.rgb2lab(pnt2[0], pnt2[1], pnt2[2])
-        print('Points in the loop: ', start_pnt, pnt)
+        '''print('Points in the loop: ', start_pnt, pnt)
         print('loop counter: ', cnt, '    STEP: ', step)
         print('distance', np.abs(distance(spectrum_pnt, pnt, mode) - distance(spectrum_pnt, start_pnt, mode)))
         print('step: ', step, "  RGB: ", pnt2[0] * 255, pnt2[1] * 255, pnt2[2] * 255)
-        print('--------------------------')
-        #time.sleep(1)
+        print('--------------------------')'''
     print('Result: ', dp.lab2rgb(pnt[0], pnt[1], pnt[2]))
     return dp.lab2rgb(pnt[0], pnt[1], pnt[2])

@@ -3,7 +3,8 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from colormath.color_objects import XYZColor, sRGBColor, LabColor
 from colormath.color_conversions import convert_color
-import cv2
+import pandas as pd
+from matplotlib import cm
 
 import data_loading as dl
 
@@ -135,7 +136,7 @@ def get_rgb_points():
     L=[]
     ll = 0.05#0.0625
     file = open("rgbcubepoints.txt", "w")
-    for i in np.arange(0.0, 1.0, ll):
+    '''for i in np.arange(0.0, 1.0, ll):
         for j in np.arange(0.0, 1.0, ll):
             for k in np.arange(0.0, 1.0, ll):
                 tmp = rgb2lab(i, j, k)#rgb_to_lab(i,j,k)
@@ -143,17 +144,17 @@ def get_rgb_points():
                 a.append(tmp[1])
                 b.append(tmp[2])
                 file.write("{0} {1} {2}\n".format(tmp[0], tmp[1], tmp[2]))
-    file.close()
+    file.close()'''
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(L, a, b, c='c', s=1)
+    #ax.scatter(L, a, b, c='c', s=1)
     ax.set_xlabel('L')
     ax.set_ylabel('a')
     ax.set_zlabel('b')
-    ax.set_xlim3d(0, max(L))
+    '''ax.set_xlim3d(0, max(L))
     ax.set_ylim3d(min(a), max(a))
-    ax.set_zlim3d(min(b), max(b))
-    print('max(L): {}; min(f) - {}, max(a) - {}, min(b) - {}, max(b) - {}'.format(max(L), min(a), max(a), min(b), max(b)))
+    ax.set_zlim3d(min(b), max(b))'''
+    #print('max(L): {}; min(f) - {}, max(a) - {}, min(b) - {}, max(b) - {}'.format(max(L), min(a), max(a), min(b), max(b)))
     a2 = []
     b2 = []
     L2 = []
@@ -171,7 +172,11 @@ def get_rgb_points():
             L2.append(tmp[0]), a2.append(tmp[1]), b2.append(tmp[2])
             tmp = rgb2lab(i, 1.0, j) #rgb_to_lab(i, 1, j)
             L2.append(tmp[0]), a2.append(tmp[1]), b2.append(tmp[2])
-    ax.scatter(L2, a2, b2, c='r', s=1)
+    #ax.scatter(L2, a2, b2, c='r', s=15)
+    #ax.plot_trisurf(L2, a2, b2, color='red', linewidth=0.05, antialiased=True)
+    df = pd.DataFrame({'x': L2, 'y': a2, 'z': b2})
+    surf = ax.plot_trisurf(df.x, df.y, df.z, cmap=cm.jet, linewidth=0.1)
+    fig.colorbar(surf, shrink=0.5, aspect=5)
     plt.show()
 
 '''def get_rgb_cube_surface():
