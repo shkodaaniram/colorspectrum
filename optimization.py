@@ -77,11 +77,11 @@ def steepest_descend(spectrum_pnt, mode, self):
     step = 1.0 #need optimization
     start_pnt = (10.0, 10.0, 10.0)
     pnt = start_pnt - np.multiply(step, np.asarray(derivation(spectrum_pnt, start_pnt, mode)))
-    print('First counted pnt: ', pnt)
+    #print('First counted pnt: ', pnt)
     eps = 0.01
     cnt = 0
-    print('first distance: ', np.abs(distance(spectrum_pnt, pnt, mode) - distance(spectrum_pnt, start_pnt, mode)))
-    while np.abs(distance(spectrum_pnt, pnt, mode) - distance(spectrum_pnt, start_pnt, mode)) > eps:
+    #print('first distance: ', np.abs(distance(spectrum_pnt, pnt, mode) - distance(spectrum_pnt, start_pnt, mode)))
+    while (np.abs(distance(spectrum_pnt, pnt, mode) - distance(spectrum_pnt, start_pnt, mode)) > eps):
         start_pnt = pnt
         step = get_step(spectrum_pnt, pnt, mode)
         pnt = start_pnt - np.multiply(step, np.asarray(derivation(spectrum_pnt, start_pnt, mode)))
@@ -90,10 +90,11 @@ def steepest_descend(spectrum_pnt, mode, self):
         pnt2 = dp.lab2rgb(pnt[0], pnt[1], pnt[2])
         pnt2 = fit_into_restrictions(pnt2, 'rgb')
         pnt = dp.rgb2lab(pnt2[0], pnt2[1], pnt2[2])
+        if cnt > 200: break;
         '''print('Points in the loop: ', start_pnt, pnt)
         print('loop counter: ', cnt, '    STEP: ', step)
         print('distance', np.abs(distance(spectrum_pnt, pnt, mode) - distance(spectrum_pnt, start_pnt, mode)))
         print('step: ', step, "  RGB: ", pnt2[0] * 255, pnt2[1] * 255, pnt2[2] * 255)
         print('--------------------------')'''
-    print('Result: ', dp.lab2rgb(pnt[0], pnt[1], pnt[2]))
+    #print('Result: ', dp.lab2rgb(pnt[0], pnt[1], pnt[2]))
     return dp.lab2rgb(pnt[0], pnt[1], pnt[2])

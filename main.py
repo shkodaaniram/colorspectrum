@@ -6,13 +6,14 @@ from scipy.interpolate import interp1d
 import data_loading as dl
 import data_processing as dp
 import optimization as optim
+import machine_learning as ml
 import time
 
 class MainFrame(wx.Frame):
 
     def __init__(self, parent, title):
         #wx.Frame.__init__(self, parent, id, title, wx.DefaultPosition, wx.Size(900, 657))
-        super(MainFrame, self).__init__(parent, title = title, size=(800,600))
+        super(MainFrame, self).__init__(parent, title = title, size=(800,650))
         self.FILENAME = 'CC-2.txt'
         self.DISTANCE = 'cie1976'
         self.initUI()
@@ -40,6 +41,9 @@ class MainFrame(wx.Frame):
         self.rbox = wx.RadioBox(panel, label = 'Glass color', pos = (80,10), choices = lblList, majorDimension = 1, style = wx.RA_SPECIFY_ROWS)
         vbox_left.Add(self.rbox, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
+        self.glass_name = wx.TextCtrl(panel, pos=(300, 0), size=(350, 20))
+        vbox_left.Add(self.glass_name, flag=wx.RIGHT | wx.BOTTOM, border=15)
+
         self.to_rgb_btn = wx.Button(panel, -1, label='To RGB', pos = (80,10), name='to_rgb')
         vbox_left.Add(self.to_rgb_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
@@ -49,10 +53,14 @@ class MainFrame(wx.Frame):
 
         self.color = wx.TextCtrl(panel, pos=(300, 0), size=(350, 200))
         self.color.SetFont(font)
+        self.color.SetForegroundColour(wx.Colour(255, 255, 255))
         vbox_left.Add(self.color, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
         self.optimize_btn = wx.Button(panel, -1, label='Optimize color', pos=(80, 10), name='optimize')
         vbox_left.Add(self.optimize_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
+
+        self.ml_btn = wx.Button(panel, -1, label='ML', pos=(80, 10), name='machine_learning')
+        vbox_left.Add(self.ml_btn, flag=wx.RIGHT | wx.BOTTOM, border=15)
 
         LOAD_FILE_ID = wx.NewId()
         self.Bind(wx.EVT_MENU, self.loadFile, id=LOAD_FILE_ID)
@@ -76,9 +84,20 @@ class MainFrame(wx.Frame):
         self.optim_text.SetFont(font)
         vbox_right.Add(self.optim_text, flag=wx.CENTER | wx.BOTTOM, border=10)
 
-        self.color_optimized = wx.TextCtrl(panel, pos=(300, 0), size=(350, 200))
+        self.color_optimized = wx.TextCtrl(panel, pos=(300, 0), size=(350, 100))
         self.color_optimized.SetFont(font)
-        vbox_right.Add(self.color_optimized, flag=wx.RIGHT | wx.BOTTOM, border=15)
+        self.color_optimized.SetForegroundColour(wx.Colour(255, 255, 255))
+        vbox_right.Add(self.color_optimized, flag=wx.RIGHT | wx.BOTTOM, border=10)
+
+        self.color_optimized2 = wx.TextCtrl(panel, pos=(300, 0), size=(350, 100))
+        self.color_optimized2.SetFont(font)
+        self.color_optimized2.SetForegroundColour(wx.Colour(255, 255, 255))
+        vbox_right.Add(self.color_optimized2, flag=wx.RIGHT | wx.BOTTOM, border=10)
+
+        self.color_optimized3 = wx.TextCtrl(panel, pos=(300, 0), size=(350, 100))
+        self.color_optimized3.SetFont(font)
+        self.color_optimized3.SetForegroundColour(wx.Colour(255, 255, 255))
+        vbox_right.Add(self.color_optimized3, flag=wx.RIGHT | wx.BOTTOM, border=10)
 
         fgs.AddMany([(vbox_left), (vbox_right)])
         hbox.Add(fgs, proportion=1, flag=wx.ALL|wx.EXPAND, border=15)
@@ -140,21 +159,32 @@ class MainFrame(wx.Frame):
             dp.get_rgb_points()
         elif name == 'optimize':
             data = dl.load_txt(self.FILENAME)
+            self.glass_name.SetValue(self.FILENAME.split('\\')[-1])
             print("FILENAME: ", self.FILENAME)
             print("DISTANCE: ", self.DISTANCE)
             func = interp1d(data[:, 0], data[:, 1], kind='slinear')  # interpolation of the data
             R, G, B = dp.plot_to_xyz(func)
             self.color.SetBackgroundColour(wx.Colour(R * 255.0, G * 255.0, B * 255.0))
-            self.color.SetValue(str(int(R * 255)) + " " + str(int(G * 255)) + " " + str(int(B * 255)))
+            self.color.SetValue(str(int(R * 255)) + ";" + str(int(G * 255)) + ";" + str(int(B * 255)))
             self.Refresh()
             print("LAB: ", dp.rgb_to_lab(R, G, B))
             R_optim, G_optim, B_optim = optim.steepest_descend((R, G, B), self.DISTANCE, self)
-            print((int(R_optim * 255), int(G_optim * 255), int(B_optim * 255)))
             self.color_optimized.SetBackgroundColour((int(R_optim * 255), int(G_optim * 255), int(B_optim * 255)))
-            self.color_optimized.SetValue(str(int(R_optim * 255)) + " " + str(int(G_optim * 255)) + " " + str(int(B_optim * 255)))
+            self.color_optimized.SetValue(str(int(R_optim * 255)) + ";" + str(int(G_optim * 255)) + ";" + str(int(B_optim * 255)))
+            self.Refresh()
+
+            R_optim, G_optim, B_optim = optim.steepest_descend((R, G, B), 'cie1994', self)
+            self.color_optimized2.SetBackgroundColour((int(R_optim * 255), int(G_optim * 255), int(B_optim * 255)))
+            self.color_optimized2.SetValue(str(int(R_optim * 255)) + ";" + str(int(G_optim * 255)) + ";" + str(int(B_optim * 255)))
+            self.Refresh()
+            R_optim, G_optim, B_optim = optim.steepest_descend((R, G, B), 'cie2000', self)
+            self.color_optimized3.SetBackgroundColour((int(R_optim * 255), int(G_optim * 255), int(B_optim * 255)))
+            self.color_optimized3.SetValue(str(int(R_optim * 255)) + ";" + str(int(G_optim * 255)) + ";" + str(int(B_optim * 255)))
             self.Refresh()
             print("RGB: ", (R, G, B), "RGB_optimized: ", (R_optim, G_optim, B_optim))
             print("RGB: ", (R * 255, G * 255, B * 255), "RGB_optimized: ", (R_optim * 255, G_optim * 255, B_optim * 255))
+        elif name == 'machine_learning':
+            ml.get_data_by_name()
 
     def createMenu(self):
         menubar = wx.MenuBar()

@@ -158,25 +158,64 @@ def get_rgb_points():
     a2 = []
     b2 = []
     L2 = []
-    for i in np.arange(0.0, 1.0, ll):
-        for j in np.arange(0.0, 1.0, ll):
+    for i in np.arange(0.0, 1.01, ll):
+        for j in np.arange(0.0, 1.01, ll):
             tmp = rgb2lab(i, j, 0.0) #rgb_to_lab(i, j, 0)
             L2.append(tmp[0]), a2.append(tmp[1]), b2.append(tmp[2])
-            tmp = rgb2lab(i, j, 1.0) #rgb_to_lab(i, j, 1)
+    df = pd.DataFrame({'x': L2, 'y': a2, 'z': b2})
+    surf = ax.plot_trisurf(df.x, df.y, df.z, cmap='OrRd_r', linewidth=0.1)
+
+    a2 = []
+    b2 = []
+    L2 = []
+    for i in np.arange(0.0, 1.01, ll):
+        for j in np.arange(0.0, 1.01, ll):
+            tmp = rgb2lab(i, 0.0, j)  # rgb_to_lab(i, j, 0)
             L2.append(tmp[0]), a2.append(tmp[1]), b2.append(tmp[2])
-            tmp = rgb2lab(0.0, i, j) #rgb_to_lab(0, i, j)
+    df = pd.DataFrame({'x': L2, 'y': a2, 'z': b2})
+    surf = ax.plot_trisurf(df.x, df.y, df.z, cmap='OrRd_r', linewidth=0.1)
+
+    a2 = []
+    b2 = []
+    L2 = []
+    for i in np.arange(0.0, 1.01, ll):
+        for j in np.arange(0.0, 1.01, ll):
+            tmp = rgb2lab(i, 1.0, j)  # rgb_to_lab(i, j, 0)
             L2.append(tmp[0]), a2.append(tmp[1]), b2.append(tmp[2])
-            tmp = rgb2lab(1.0, i, j) #rgb_to_lab(1, i, j)
+    df = pd.DataFrame({'x': L2, 'y': a2, 'z': b2})
+    surf = ax.plot_trisurf(df.x, df.y, df.z, cmap='OrRd_r', linewidth=0.1)
+
+    a2 = []
+    b2 = []
+    L2 = []
+    for i in np.arange(0.0, 1.01, ll):
+        for j in np.arange(0.0, 1.01, ll):
+            tmp = rgb2lab(0.0, i, j)  # rgb_to_lab(i, j, 0)
             L2.append(tmp[0]), a2.append(tmp[1]), b2.append(tmp[2])
-            tmp = rgb2lab(i, 0.0, j) #rgb_to_lab(i, 0, j)
+    df = pd.DataFrame({'x': L2, 'y': a2, 'z': b2})
+    surf = ax.plot_trisurf(df.x, df.y, df.z, cmap='OrRd_r', linewidth=0.1)
+
+    a2 = []
+    b2 = []
+    L2 = []
+    for i in np.arange(0.0, 1.01, ll):
+        for j in np.arange(0.0, 1.01, ll):
+            tmp = rgb2lab(1.0, i, j)  # rgb_to_lab(i, j, 0)
             L2.append(tmp[0]), a2.append(tmp[1]), b2.append(tmp[2])
-            tmp = rgb2lab(i, 1.0, j) #rgb_to_lab(i, 1, j)
+    df = pd.DataFrame({'x': L2, 'y': a2, 'z': b2})
+    surf = ax.plot_trisurf(df.x, df.y, df.z, cmap='OrRd_r', linewidth=0.1)
+
+    a2 = []
+    b2 = []
+    L2 = []
+    for i in np.arange(0.0, 1.01, ll):
+        for j in np.arange(0.0, 1.01, ll):
+            tmp = rgb2lab(i, j, 1.0)  # rgb_to_lab(i, j, 0)
             L2.append(tmp[0]), a2.append(tmp[1]), b2.append(tmp[2])
     #ax.scatter(L2, a2, b2, c='r', s=15)
     #ax.plot_trisurf(L2, a2, b2, color='red', linewidth=0.05, antialiased=True)
     df = pd.DataFrame({'x': L2, 'y': a2, 'z': b2})
-    surf = ax.plot_trisurf(df.x, df.y, df.z, cmap=cm.jet, linewidth=0.1)
-    fig.colorbar(surf, shrink=0.5, aspect=5)
+    surf = ax.plot_trisurf(df.x, df.y, df.z, cmap='OrRd_r', linewidth=0.1)
     plt.show()
 
 '''def get_rgb_cube_surface():
